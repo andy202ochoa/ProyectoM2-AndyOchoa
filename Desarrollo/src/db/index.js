@@ -1,4 +1,9 @@
 const { Pool } = require("pg");
+const app = require("./src/app");
+
+app.listen(3000, () => {
+  console.log("Servidor corriendo");
+});
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -21,5 +26,3 @@ async function testDB() {
 }
 
 module.exports = pool;
-
-//aqui hay un error, revisar luego
