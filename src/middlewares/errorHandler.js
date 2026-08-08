@@ -1,4 +1,13 @@
-module.exports = (err, req, res, next) => {
+const errorHandler = (err, req, res, next) => {
   console.error(err);
-  res.status(500).json({ error: "Error interno del servidor" });
+
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  res.status(500).json({
+    message: "Internal server error",
+  });
 };
+
+module.exports = errorHandler;

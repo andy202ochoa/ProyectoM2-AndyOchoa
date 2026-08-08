@@ -1,47 +1,131 @@
-const pool = require("../db");
+const authorsService = require("../services/authors.service");
 
-exports.getUsers = async (req, res, next) => {
+const getAuthors = async (req, res, next) => {
   try {
-    const result = await pool.query("SELECT * FROM users");
-    res.json(result.rows);
-  } catch (err) {
-    next(err);
+    const authors = await authorsService.getAllAuthors();
+
+    res.status(200).json(authors);
+  } catch (error) {
+    next(error);
   }
 };
 
-exports.getUserById = async (req, res, next) => {
+const getAuthor = async (req, res, next) => {
   try {
-    const result = await pool.query("SELECT * FROM users WHERE id=$1", [req.params.id]);
-    if (result.rows.length === 0) return res.status(404).json({ error: "No encontrado" });
-    res.json(result.rows[0]);
-  } catch (err) {
-    next(err);
+    const { id } = req.params;
+
+    const author = await authorsService.getAuthorById(id);
+
+    if (!author) {
+      return res.status(404).json({
+        message: "Author not found",
+      });
+    }
+
+    res.status(200).json(author);
+  } catch (error) {
+    next(error);
   }
 };
 
-exports.createUser = async (req, res, next) => {
+const createAuthor = async (req, res, next) => {
   try {
-    const { name, email } = req.body;
-    if (!name || !email) return res.status(400).json({ error: "name y email requeridos" });
+    const { name, email, bio } = req.body;
 
-    const result = await pool.query(
-      "INSERT INTO users (name, email) VALUES ($1,$2) RETURNING *",
-      [name, email]
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        message: "Name is required",
+      });
+    }
+
+    if (!email || !email.trim()) {
+      return res.status(400).json({
+        message: "Email is required",
+      });
+    }
+
+    const author = await authorsService.createAuthor(
+      name.trim(),
+      email.trim(),
+      bio || null
     );
 
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    if (err.code === "23505") return res.status(409).json({ error: "Email duplicado" });
-    next(err);
+    res.status(201).json(author);
+  } catch (error) {
+    if (error.code === "23505") {
+      return res.status(400).json({
+        message: "Email already exists",
+      });
+    }
+
+    next(error);
   }
 };
 
-exports.deleteUser = async (req, res, next) => {
+const updateAuthor = async (req, res, next) => {
   try {
-    const result = await pool.query("DELETE FROM users WHERE id=$1 RETURNING *", [req.params.id]);
-    if (result.rows.length === 0) return res.status(404).json({ error: "No encontrado" });
-    res.json({ message: "Eliminado" });
-  } catch (err) {
-    next(err);
+    const { id } = req.params;
+    const { name, email, bio } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        message: "Name is required",
+      });
+    }
+
+    if (!email || !email.trim()) {
+      return res.status(400).json({
+        message: "Email is required",
+      });
+    }
+
+    const author = await authorsService.updateAuthor(
+      id,
+      name.trim(),
+      email.trim(),
+      bio || null
+    );
+
+    if (!author) {
+      return res.status(404).json({
+        message: "Author not found",
+      });
+    }
+
+    res.status(200).json(author);
+  } catch (error) {
+    if (error.code === "23505") {
+      return res.status(400).json({
+        message: "Email already exists",
+      });
+    }
+
+    next(error);
   }
+};
+
+const deleteAuthor = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const author = await authorsService.deleteAuthor(id);
+
+    if (!author) {
+      return res.status(404).json({
+        message: "Author not found",
+      });
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  getAuthors,
+  getAuthor,
+  createAuthor,
+  updateAuthor,
+  deleteAuthor,
 };
