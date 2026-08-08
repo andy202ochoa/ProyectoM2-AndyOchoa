@@ -1,5 +1,6 @@
 const request = require("supertest");
 const app = require("../src/app");
+const pool = require("../src/db");
 
 describe("Users API", () => {
   it("GET /users 200", async () => {
@@ -11,4 +12,8 @@ describe("Users API", () => {
     const res = await request(app).post("/users").send({ name: "Test" });
     expect(res.statusCode).toBe(400);
   });
+});
+
+afterAll(async () => {
+  await pool.end();
 });

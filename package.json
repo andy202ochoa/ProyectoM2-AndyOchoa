@@ -1,25 +1,29 @@
 {
-  "name": "ft77",
+  "name": "miniblog",
   "version": "1.0.0",
-  "description": "",
-  "keywords": [],
-  "license": "ISC",
-  "author": "",
-  "type": "commonjs",
-  "main": "index.js",
+  "description": "API REST para gestionar autores y publicaciones",
+  "main": "src/index.js",
   "scripts": {
-    "test": "jest",
-    "start": "echo todo ok en start",
-    "dev": "node --watch index.js"
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "jest --runInBand"
   },
+  "keywords": [
+    "node",
+    "express",
+    "postgresql",
+    "api",
+    "rest"
+  ],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "pg": "^8.22.0"
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "pg": "^8.16.3"
   },
   "devDependencies": {
-    "jest": "^29.0.0",
-    "nodemon": "^3.1.14",
-    "supertest": "^7.2.2"
+    "jest": "^30.0.5",
+    "supertest": "^7.1.4"
   }
 }
