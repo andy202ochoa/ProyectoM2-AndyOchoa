@@ -6,6 +6,8 @@ info:
 servers:
   - url: http://localhost:3000
     description: Servidor local de desarrollo
+  - url: https://proyectom2-andyochoa-production.up.railway.app/
+    description: Servidor de producción
 paths:
   /authors:
     get:
