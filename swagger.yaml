@@ -153,11 +153,15 @@ components:
         email:
           type: string
           format: email
-          example: autor@example.com
+          example: autor@gmail.com
+        bio:
+          type: string
+          example: Dev
       required:
         - id
         - name
         - email
+        - bio
     NewAuthor:
       type: object
       properties:
@@ -166,9 +170,12 @@ components:
         email:
           type: string
           format: email
+        bio:
+          type: string
       required:
         - name
         - email
+        - bio
     Post:
       type: object
       properties:

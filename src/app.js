@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require('cors');
 const path = require("path");
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
@@ -8,6 +9,7 @@ const postsRoutes = require("./routes/posts.routes");
 const errorHandler = require("./middlewares/errorHandler");
 
 const app = express();
+app.use(cors());
 
 app.use(express.json());
 
