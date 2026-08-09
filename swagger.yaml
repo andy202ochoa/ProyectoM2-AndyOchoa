@@ -28,20 +28,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
- *            required:
- *              - name
- *              - email
- *            properties:
- *               name:
- *                 type: string
- *                 example: "Andy Ochoa"
- *               email:
- *                 type: string
- *                 example: "user@example.com"
- *               bio:
- *                 type: string
- *                 example: "Desarrollador de software"
+              $ref: '#/components/schemas/NewAuthor'
       responses:
         '201':
           description: Autor creado
