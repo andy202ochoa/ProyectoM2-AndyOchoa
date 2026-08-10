@@ -2,6 +2,14 @@
 
 API REST desarrollada con Node.js, Express y PostgreSQL.
 
+## Swagger UI en Railway
+
+La documentación interactiva de la API está disponible en la siguiente URL de Railway:
+
+https://proyectom2-andyochoa-production.up.railway.app/docs/
+
+Desde ahí puedes explorar los endpoints, ver los parámetros esperados y probar las solicitudes directamente en el navegador. Para usarla, simplemente abre el enlace en tu navegador y selecciona el servidor de la nube y prueba cualquier operación para ver su detalle o ejecutar una petición con el botón "Try it out".
+
 ## Tecnologías
 
 - Node.js
