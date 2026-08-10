@@ -19,6 +19,13 @@ Desde ahí puedes explorar los endpoints, ver los parámetros esperados y probar
 - Jest
 - Supertest
 
+
+## DOCUMENTACION DEL USO DE IA
+
+    Visita el siguiente enlace en drive para poder visualizar el pdf:
+
+    https://drive.google.com/file/d/1NmiPkQgbaM1UC-lPjyT-Zjg9Yi20RR0z/view?usp=sharing
+
 ## Instalación
 
 ```bash
@@ -151,9 +158,3 @@ Finalmente:
     Controller
     ↓
     Response 201
-
-DOCUMENTACION DEL USO DE IA
-
-Visita el siguiente enlace en drive para poder visualizar el pdf:
-
-https://drive.google.com/file/d/1NmiPkQgbaM1UC-lPjyT-Zjg9Yi20RR0z/view?usp=sharing
