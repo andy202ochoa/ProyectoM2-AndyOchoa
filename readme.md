@@ -151,3 +151,9 @@ Finalmente:
     Controller
     ↓
     Response 201
+
+DOCUMENTACION DEL USO DE IA
+
+Visita el siguiente enlace en drive para poder visualizar el pdf:
+
+https://drive.google.com/file/d/1NmiPkQgbaM1UC-lPjyT-Zjg9Yi20RR0z/view?usp=sharing
