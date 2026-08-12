@@ -20,11 +20,11 @@ Desde ahí puedes explorar los endpoints, ver los parámetros esperados y probar
 - Supertest
 
 
-## DOCUMENTACION DEL USO DE IA
+## DOCUMENTACION USO DE IA
 
-    Visita el siguiente enlace en drive para poder visualizar el pdf:
+Puedes ver la documentación de IA desde el siguiente enlace en un documento PDF:
 
-    https://drive.google.com/file/d/1NmiPkQgbaM1UC-lPjyT-Zjg9Yi20RR0z/view?usp=sharing
+https://drive.google.com/file/d/1NmiPkQgbaM1UC-lPjyT-Zjg9Yi20RR0z/view?usp=sharing
 
 ## Instalación
 
