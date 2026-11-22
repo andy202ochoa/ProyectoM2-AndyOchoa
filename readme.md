@@ -4,6 +4,9 @@ API REST para un blog: gestiona **autores** y sus **publicaciones (posts)**. Hec
 
 > Proyecto Integrador del Módulo 2 del bootcamp Full Stack de Henry.
 
+🔗 **Demo (Swagger UI):** https://proyecto-m2-andy-ochoa.vercel.app/docs
+Desplegada en **Vercel** con base de datos **PostgreSQL en Neon** (plan gratuito). Desde ahí puedes probar todos los endpoints con "Try it out".
+
 ## Tecnologías
 
 - Node.js + Express 5
@@ -77,6 +80,14 @@ npm test       # pruebas (necesitan la base de datos configurada en .env)
 ```
 
 Documentación interactiva: **http://localhost:3000/docs**
+
+## Deploy en Vercel + Neon (demo actual)
+
+1. En [Neon](https://neon.tech), crea un proyecto y ejecuta `database/schema.sql` y `database/seed.sql` en el **SQL Editor**.
+2. En [Vercel](https://vercel.com), importa este repositorio. Vercel detecta Express y usa `src/app.js`, que exporta la app.
+3. Agrega las variables de entorno `DATABASE_URL` (cadena de Neon con `-pooler`) y `NODE_ENV=production`, y despliega.
+
+En Vercel, Swagger UI carga sus archivos desde un CDN y el pool de conexiones se limita a 3 (ver `src/app.js` y `src/config/db.js`).
 
 ## Deploy en Railway
 
