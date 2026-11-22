@@ -15,7 +15,20 @@ app.use(express.json());
 
 // Cargar especificación OpenAPI desde el archivo swagger.yaml en la raíz
 const swaggerDocument = YAML.load(path.join(__dirname, "..", "swagger.yaml"));
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// En Vercel los archivos estáticos de Swagger UI no se incluyen en la función,
+// así que se cargan desde un CDN. En local se usan los de node_modules.
+const SWAGGER_CDN = "https://unpkg.com/swagger-ui-dist@5";
+const swaggerOptions = process.env.VERCEL
+  ? {
+      customCssUrl: `${SWAGGER_CDN}/swagger-ui.css`,
+      customJs: [
+        `${SWAGGER_CDN}/swagger-ui-bundle.js`,
+        `${SWAGGER_CDN}/swagger-ui-standalone-preset.js`,
+      ],
+    }
+  : {};
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerOptions));
 
 app.get("/", (req, res) => {
   res.status(200).json({

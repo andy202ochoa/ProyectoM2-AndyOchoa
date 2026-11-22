@@ -4,8 +4,8 @@ info:
   description: API REST para gestionar autores y sus publicaciones (posts).
   version: 1.0.0
 servers:
-  - url: http://localhost:3000
-    description: Servidor local de desarrollo
+  - url: /
+    description: Este servidor (local o desplegado)
 tags:
   - name: Authors
   - name: Posts
