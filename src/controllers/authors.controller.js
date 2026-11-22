@@ -1,4 +1,34 @@
 const authorsService = require("../services/authors.service");
+const {
+  parseId,
+  isNonEmptyString,
+  isValidEmail,
+} = require("../utils/validators");
+
+// Valida el body de crear/actualizar autor. Devuelve un mensaje de error o null.
+const validateAuthorBody = ({ name, email, bio }) => {
+  if (!isNonEmptyString(name)) {
+    return "Name is required";
+  }
+
+  if (name.trim().length > 100) {
+    return "Name must be at most 100 characters";
+  }
+
+  if (!isNonEmptyString(email)) {
+    return "Email is required";
+  }
+
+  if (!isValidEmail(email) || email.trim().length > 150) {
+    return "Email is not valid";
+  }
+
+  if (bio !== undefined && bio !== null && typeof bio !== "string") {
+    return "Bio must be a string";
+  }
+
+  return null;
+};
 
 const getAuthors = async (req, res, next) => {
   try {
@@ -12,7 +42,13 @@ const getAuthors = async (req, res, next) => {
 
 const getAuthor = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = parseId(req.params.id);
+
+    if (!id) {
+      return res.status(400).json({
+        message: "Invalid author id",
+      });
+    }
 
     const author = await authorsService.getAuthorById(id);
 
@@ -30,17 +66,13 @@ const getAuthor = async (req, res, next) => {
 
 const createAuthor = async (req, res, next) => {
   try {
-    const { name, email, bio } = req.body;
+    const { name, email, bio } = req.body ?? {};
 
-    if (!name || !name.trim()) {
-      return res.status(400).json({
-        message: "Name is required",
-      });
-    }
+    const validationError = validateAuthorBody({ name, email, bio });
 
-    if (!email || !email.trim()) {
+    if (validationError) {
       return res.status(400).json({
-        message: "Email is required",
+        message: validationError,
       });
     }
 
@@ -64,18 +96,21 @@ const createAuthor = async (req, res, next) => {
 
 const updateAuthor = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { name, email, bio } = req.body;
+    const id = parseId(req.params.id);
 
-    if (!name || !name.trim()) {
+    if (!id) {
       return res.status(400).json({
-        message: "Name is required",
+        message: "Invalid author id",
       });
     }
 
-    if (!email || !email.trim()) {
+    const { name, email, bio } = req.body ?? {};
+
+    const validationError = validateAuthorBody({ name, email, bio });
+
+    if (validationError) {
       return res.status(400).json({
-        message: "Email is required",
+        message: validationError,
       });
     }
 
@@ -106,7 +141,13 @@ const updateAuthor = async (req, res, next) => {
 
 const deleteAuthor = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = parseId(req.params.id);
+
+    if (!id) {
+      return res.status(400).json({
+        message: "Invalid author id",
+      });
+    }
 
     const author = await authorsService.deleteAuthor(id);
 

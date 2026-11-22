@@ -1,16 +1,18 @@
 openapi: 3.0.3
 info:
-  title: PIM2 API
-  description: API para el proyecto PIM2 — Authors y Posts
+  title: MiniBlog API
+  description: API REST para gestionar autores y sus publicaciones (posts).
   version: 1.0.0
 servers:
   - url: http://localhost:3000
     description: Servidor local de desarrollo
-  - url: https://proyectom2-andyochoa-production.up.railway.app/
-    description: Servidor de producción
+tags:
+  - name: Authors
+  - name: Posts
 paths:
   /authors:
     get:
+      tags: [Authors]
       summary: Obtener lista de autores
       responses:
         '200':
@@ -21,7 +23,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Author'
+        '500':
+          $ref: '#/components/responses/ServerError'
     post:
+      tags: [Authors]
       summary: Crear un autor
       requestBody:
         required: true
@@ -36,14 +41,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Author'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/ServerError'
   /authors/{id}:
     parameters:
-      - in: path
-        name: id
-        required: true
-        schema:
-          type: integer
+      - $ref: '#/components/parameters/Id'
     get:
+      tags: [Authors]
       summary: Obtener un autor por id
       responses:
         '200':
@@ -52,9 +58,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Author'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
-          description: Autor no encontrado
+          $ref: '#/components/responses/NotFound'
     put:
+      tags: [Authors]
       summary: Actualizar un autor
       requestBody:
         required: true
@@ -69,13 +78,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Author'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
     delete:
-      summary: Eliminar un autor
+      tags: [Authors]
+      summary: Eliminar un autor (también borra sus posts)
       responses:
         '204':
           description: Autor eliminado
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /posts:
     get:
+      tags: [Posts]
       summary: Obtener lista de posts
       responses:
         '200':
@@ -86,7 +105,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Post'
+        '500':
+          $ref: '#/components/responses/ServerError'
     post:
+      tags: [Posts]
       summary: Crear un post
       requestBody:
         required: true
@@ -101,14 +123,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Post'
-  /posts/{id}:
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /posts/author/{authorId}:
     parameters:
       - in: path
-        name: id
+        name: authorId
         required: true
         schema:
           type: integer
+          minimum: 1
+        example: 1
     get:
+      tags: [Posts]
+      summary: Obtener los posts de un autor (con los datos del autor)
+      responses:
+        '200':
+          description: Lista de posts del autor (vacía si no tiene posts)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PostWithAuthor'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /posts/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Posts]
       summary: Obtener un post por id
       responses:
         '200':
@@ -117,10 +161,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Post'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
-          description: Post no encontrado
+          $ref: '#/components/responses/NotFound'
     put:
+      tags: [Posts]
       summary: Actualizar un post
+      description: Si no se envía `published`, se mantiene su valor actual.
       requestBody:
         required: true
         content:
@@ -134,13 +182,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Post'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
     delete:
+      tags: [Posts]
       summary: Eliminar un post
       responses:
         '204':
           description: Post eliminado
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
 components:
+  parameters:
+    Id:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+      example: 1
+  responses:
+    BadRequest:
+      description: Datos inválidos (id no numérico, campo faltante, JSON mal escrito, email repetido o autor inexistente)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Name is required
+    NotFound:
+      description: No encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Author not found
+    ServerError:
+      description: Error interno del servidor
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            message: Internal server error
   schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
     Author:
       type: object
       properties:
@@ -149,63 +245,100 @@ components:
           example: 1
         name:
           type: string
-          example: Gabriel García
+          example: Andy Ochoa
         email:
           type: string
           format: email
-          example: autor@gmail.com
+          example: andy@example.com
         bio:
           type: string
-          example: Dev
-      required:
-        - id
-        - name
-        - email
-        - bio
+          nullable: true
+          example: Desarrollador web junior
+        created_at:
+          type: string
+          format: date-time
     NewAuthor:
       type: object
       properties:
         name:
           type: string
+          maxLength: 100
+          example: Andy Ochoa
         email:
           type: string
           format: email
+          maxLength: 150
+          example: nuevo@example.com
         bio:
           type: string
+          nullable: true
+          example: Desarrollador web junior
       required:
         - name
         - email
-        - bio
     Post:
       type: object
       properties:
         id:
           type: integer
           example: 1
-        title:
-          type: string
-          example: Un post interesante
-        content:
-          type: string
-          example: Contenido del post
-        authorId:
+        author_id:
           type: integer
           example: 1
-      required:
-        - id
-        - title
-        - content
-        - authorId
+        title:
+          type: string
+          example: Mi primer post
+        content:
+          type: string
+          example: Este es el contenido de mi primer post.
+        published:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+    PostWithAuthor:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        published:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        author_id:
+          type: integer
+        author_name:
+          type: string
+        author_email:
+          type: string
+        author_bio:
+          type: string
+          nullable: true
     NewPost:
       type: object
       properties:
+        author_id:
+          type: integer
+          minimum: 1
+          example: 1
         title:
           type: string
+          maxLength: 200
+          example: Aprendiendo Express
         content:
           type: string
-        authorId:
-          type: integer
+          example: Hoy aprendí a crear rutas con Express.
+        published:
+          type: boolean
+          default: false
+          example: false
       required:
+        - author_id
         - title
         - content
-        - authorId

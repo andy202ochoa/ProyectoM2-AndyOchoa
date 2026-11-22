@@ -98,11 +98,11 @@ const updatePost = async (
     SET author_id = $1,
         title = $2,
         content = $3,
-        published = $4
+        published = COALESCE($4, published)
     WHERE id = $5
     RETURNING *
     `,
-    [authorId, title, content, published, id]
+    [authorId, title, content, published ?? null, id]
   );
 
   return result.rows[0];

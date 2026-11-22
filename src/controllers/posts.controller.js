@@ -1,4 +1,34 @@
 const postsService = require("../services/posts.service");
+const { parseId, isNonEmptyString } = require("../utils/validators");
+
+// Valida el body de crear/actualizar post. Devuelve un mensaje de error o null.
+const validatePostBody = ({ author_id, title, content, published }) => {
+  if (author_id === undefined || author_id === null || author_id === "") {
+    return "author_id is required";
+  }
+
+  if (!parseId(author_id)) {
+    return "author_id must be a positive integer";
+  }
+
+  if (!isNonEmptyString(title)) {
+    return "Title is required";
+  }
+
+  if (title.trim().length > 200) {
+    return "Title must be at most 200 characters";
+  }
+
+  if (!isNonEmptyString(content)) {
+    return "Content is required";
+  }
+
+  if (published !== undefined && typeof published !== "boolean") {
+    return "Published must be true or false";
+  }
+
+  return null;
+};
 
 const getPosts = async (req, res, next) => {
   try {
@@ -12,7 +42,13 @@ const getPosts = async (req, res, next) => {
 
 const getPost = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = parseId(req.params.id);
+
+    if (!id) {
+      return res.status(400).json({
+        message: "Invalid post id",
+      });
+    }
 
     const post = await postsService.getPostById(id);
 
@@ -30,7 +66,13 @@ const getPost = async (req, res, next) => {
 
 const getPostsByAuthor = async (req, res, next) => {
   try {
-    const { authorId } = req.params;
+    const authorId = parseId(req.params.authorId);
+
+    if (!authorId) {
+      return res.status(400).json({
+        message: "Invalid author id",
+      });
+    }
 
     const posts = await postsService.getPostsByAuthor(authorId);
 
@@ -42,40 +84,26 @@ const getPostsByAuthor = async (req, res, next) => {
 
 const createPost = async (req, res, next) => {
   try {
-    const {
+    const { author_id, title, content, published } = req.body ?? {};
+
+    const validationError = validatePostBody({
       author_id,
       title,
       content,
-      published = false,
-    } = req.body;
+      published,
+    });
 
-    if (
-      author_id === undefined ||
-      author_id === null ||
-      author_id === ""
-    ) {
+    if (validationError) {
       return res.status(400).json({
-        message: "author_id is required",
-      });
-    }
-
-    if (!title || !title.trim()) {
-      return res.status(400).json({
-        message: "Title is required",
-      });
-    }
-
-    if (!content || !content.trim()) {
-      return res.status(400).json({
-        message: "Content is required",
+        message: validationError,
       });
     }
 
     const post = await postsService.createPost(
-      author_id,
+      parseId(author_id),
       title.trim(),
       content.trim(),
-      published
+      published ?? false
     );
 
     res.status(201).json(post);
@@ -92,40 +120,33 @@ const createPost = async (req, res, next) => {
 
 const updatePost = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = parseId(req.params.id);
 
-    const {
+    if (!id) {
+      return res.status(400).json({
+        message: "Invalid post id",
+      });
+    }
+
+    const { author_id, title, content, published } = req.body ?? {};
+
+    const validationError = validatePostBody({
       author_id,
       title,
       content,
       published,
-    } = req.body;
+    });
 
-    if (
-      author_id === undefined ||
-      author_id === null ||
-      author_id === ""
-    ) {
+    if (validationError) {
       return res.status(400).json({
-        message: "author_id is required",
+        message: validationError,
       });
     }
 
-    if (!title || !title.trim()) {
-      return res.status(400).json({
-        message: "Title is required",
-      });
-    }
-
-    if (!content || !content.trim()) {
-      return res.status(400).json({
-        message: "Content is required",
-      });
-    }
-
+    // Si no envían "published", se mantiene el valor actual (ver posts.service.js)
     const post = await postsService.updatePost(
       id,
-      author_id,
+      parseId(author_id),
       title.trim(),
       content.trim(),
       published
@@ -151,7 +172,13 @@ const updatePost = async (req, res, next) => {
 
 const deletePost = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const id = parseId(req.params.id);
+
+    if (!id) {
+      return res.status(400).json({
+        message: "Invalid post id",
+      });
+    }
 
     const post = await postsService.deletePost(id);
 

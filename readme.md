@@ -1,160 +1,151 @@
 # MiniBlog API
 
-API REST desarrollada con Node.js, Express y PostgreSQL.
+API REST para un blog: gestiona **autores** y sus **publicaciones (posts)**. Hecha con Node.js, Express y PostgreSQL, con pruebas en Jest + Supertest y documentación interactiva con Swagger UI.
 
-## Swagger UI en Railway
-
-La documentación interactiva de la API está disponible en la siguiente URL de Railway:
-
-https://proyectom2-andyochoa-production.up.railway.app/docs/
-
-Desde ahí puedes explorar los endpoints, ver los parámetros esperados y probar las solicitudes directamente en el navegador. Para usarla, simplemente abre el enlace en tu navegador y selecciona el servidor de la nube y prueba cualquier operación para ver su detalle o ejecutar una petición con el botón "Try it out".
+> Proyecto Integrador del Módulo 2 del bootcamp Full Stack de Henry.
 
 ## Tecnologías
 
-- Node.js
-- Express
-- PostgreSQL
-- pg
-- Jest
-- Supertest
+- Node.js + Express 5
+- PostgreSQL (`pg`, consultas parametrizadas)
+- Jest + Supertest
+- Swagger UI (`swagger.yaml`, OpenAPI 3)
 
+## Arquitectura
 
-## DOCUMENTACION USO DE IA
+Cada petición pasa por capas:
 
-Puedes ver la documentación de IA desde el siguiente enlace en un documento PDF:
+```
+app.js → routes → controllers (validan y responden) → services (SQL) → PostgreSQL
+```
 
-https://drive.google.com/file/d/1NmiPkQgbaM1UC-lPjyT-Zjg9Yi20RR0z/view?usp=sharing
+```
+src/
+├── app.js               # Express, Swagger, rutas, 404 y manejo de errores
+├── index.js             # Arranca el servidor
+├── config/db.js         # Pool de conexión a PostgreSQL
+├── routes/              # authors.routes.js, posts.routes.js
+├── controllers/         # Validan datos y devuelven el código HTTP correcto
+├── services/            # Consultas SQL
+├── middlewares/         # errorHandler.js
+└── utils/validators.js  # Validación de ids, textos y emails
+database/
+├── schema.sql           # Tablas authors y posts
+└── seed.sql             # Datos de ejemplo
+test/                    # Pruebas de los endpoints
+```
 
 ## Instalación
 
+Requisitos: Node.js 20 o superior y PostgreSQL.
+
 ```bash
+git clone https://github.com/andy202ochoa/ProyectoM2-AndyOchoa.git
+cd ProyectoM2-AndyOchoa
 npm install
+```
 
-VARIABLES DE ENTORNO 
-    Crear un archivo .env:
+### Variables de entorno
 
-        PORT=3000
-        DATABASE_URL=postgresql://postgres:password@localhost:5432/miniblog
-        NODE_ENV=development
+Copia `.env.example` como `.env` y completa los valores:
 
-BASE DE DATOS
-    Crear la base:
+| Variable | Descripción | Ejemplo |
+|----------|-------------|---------|
+| `PORT` | Puerto del servidor | `3000` |
+| `DATABASE_URL` | Cadena de conexión de PostgreSQL | `postgresql://postgres:TU_PASSWORD@localhost:5432/miniblog` |
+| `NODE_ENV` | `development` o `production` (en producción activa SSL) | `development` |
 
-        CREATE DATABASE miniblog;
+### Base de datos
 
-    Ejecutar:
+```sql
+CREATE DATABASE miniblog;
+```
 
-        database/schema.sql
+Luego ejecuta, en este orden, `database/schema.sql` y `database/seed.sql` (por ejemplo desde pgAdmin o con `psql`):
 
-    Después:
+```bash
+psql -U postgres -d miniblog -f database/schema.sql
+psql -U postgres -d miniblog -f database/seed.sql
+```
 
-        database/seed.sql
+## Uso
 
-EJECUTAR 
+```bash
+npm run dev    # desarrollo (se reinicia al guardar)
+npm start      # producción
+npm test       # pruebas (necesitan la base de datos configurada en .env)
+```
 
-    Modo desarrollo:
+Documentación interactiva: **http://localhost:3000/docs**
 
-        npm run dev
+## Deploy en Railway
 
-    Modo producción:
+1. En [Railway](https://railway.com), crea un proyecto con **Deploy from GitHub repo** y elige este repositorio.
+2. En el mismo proyecto, agrega una base de datos: **+ Create → Database → PostgreSQL**.
+3. En el servicio de la API, pestaña **Variables**, agrega:
 
-        npm start
-    Tests
-        npm test
+   | Variable | Valor |
+   |----------|-------|
+   | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` (referencia a la **URL interna** de la base, `postgres.railway.internal`, que solo funciona dentro de Railway) |
+   | `NODE_ENV` | `production` |
 
-ENDPOINTS
+   `PORT` no hace falta: Railway la asigna sola y la app la lee de `process.env.PORT`.
+4. Crea las tablas: copia la **URL pública** de la base (variable `DATABASE_PUBLIC_URL` del servicio Postgres) y, desde tu PC, ejecuta `schema.sql` y `seed.sql` con `psql "<URL pública>" -f database/schema.sql` (y luego `seed.sql`), o pega su contenido en la pestaña **Data → Query** del servicio Postgres.
+5. En el servicio de la API, **Settings → Networking → Generate Domain** crea la **URL pública** de la API. La documentación queda en `https://<tu-dominio>.up.railway.app/docs`.
 
-    Authors
+Railway usa `npm start` (`node src/index.js`) para arrancar la app. El archivo `.env` nunca se sube a GitHub; en producción las variables se configuran en el panel de Railway.
 
-        GET /authors
+## Endpoints
 
-        GET /authors/:id
+### Authors
 
-        POST /authors
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/authors` | Lista todos los autores |
+| GET | `/authors/:id` | Obtiene un autor |
+| POST | `/authors` | Crea un autor (`name` y `email` obligatorios, `bio` opcional) |
+| PUT | `/authors/:id` | Actualiza un autor |
+| DELETE | `/authors/:id` | Elimina un autor y sus posts |
 
-        PUT /authors/:id
+### Posts
 
-        DELETE /authors/:id
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/posts` | Lista todos los posts |
+| GET | `/posts/:id` | Obtiene un post |
+| GET | `/posts/author/:authorId` | Posts de un autor, con los datos del autor |
+| POST | `/posts` | Crea un post (`author_id`, `title`, `content`; `published` opcional, por defecto `false`) |
+| PUT | `/posts/:id` | Actualiza un post (si no se envía `published`, se mantiene) |
+| DELETE | `/posts/:id` | Elimina un post |
 
-    Posts
+Ejemplo de body para crear un post:
 
-        GET /posts
+```json
+{
+  "author_id": 1,
+  "title": "Aprendiendo Express",
+  "content": "Hoy aprendí a crear rutas con Express.",
+  "published": false
+}
+```
 
-        GET /posts/:id
+## Códigos HTTP
 
-        GET /posts/author/:authorId
+| Código | Significado | Ejemplo |
+|--------|-------------|---------|
+| `200` | OK | `GET /authors` |
+| `201` | Creado | `POST /authors` |
+| `204` | Sin contenido | `DELETE /authors/1` |
+| `400` | Datos incorrectos | `POST /authors` sin `name`, id no numérico (`/authors/abc`), email repetido, JSON mal escrito, autor inexistente |
+| `404` | No encontrado | `GET /authors/999` |
+| `500` | Error del servidor | Error inesperado de PostgreSQL |
 
-        POST /posts
+Los errores siempre responden con el formato `{ "message": "..." }`.
 
-        PUT /posts/:id
+## Documentación del uso de IA
 
-        DELETE /posts/:id
+[Ver documento PDF](https://drive.google.com/file/d/1NmiPkQgbaM1UC-lPjyT-Zjg9Yi20RR0z/view?usp=sharing)
 
+## Autor
 
-
-    # 29. Códigos HTTP utilizados
-
-    Nuestra API utilizará:
-
-    | Código | Significado | Ejemplo |
-    |---|---|---|
-    | `200` | OK | GET /authors |
-    | `201` | Creado | POST /authors |
-    | `204` | Sin contenido | DELETE /authors/1 |
-    | `400` | Datos incorrectos | POST sin name |
-    | `404` | No encontrado | GET /authors/999 |
-    | `500` | Error del servidor | Error PostgreSQL |
-
-    ---
-
-    # 30. Flujo completo de una petición
-
-    Por ejemplo:
-
-    ```http
-    POST /authors
-
-llega primero a:
-
-    app.js
-
-Después:
-
-    /authors
-
-lo manda a:
-
-    authors.routes.js
-
-Luego:
-
-    authors.controller.js
-
-El controller valida:
-
-    if (!name || !name.trim()) {
-        return res.status(400).json(...)
-    }
-
-Si todo está bien:
-
-    authors.service.js
-
-ejecuta:
-
-    INSERT INTO authors ...
-
-    con parámetros:
-
-    [name, email, bio]
-
-    PostgreSQL devuelve el registro.
-
-Finalmente:
-
-    Service
-    ↓
-    Controller
-    ↓
-    Response 201
+**Andy Ochoa** · [GitHub](https://github.com/andy202ochoa)
